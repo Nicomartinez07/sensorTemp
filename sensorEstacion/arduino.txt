@@ -1,0 +1,55 @@
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <DHT.h>
+
+// Definiciones
+#define DHTPIN 5 // Pin donde conectas el DHT11
+#define DHTTYPE DHT11
+//#define WATER_SENSOR_PIN GPIO33
+//#define LDR_PIN GPIO32
+
+// Inicialización de sensores
+DHT dht(DHTPIN, DHTTYPE);
+Adafruit_BME280 bme;
+
+void setup() {
+  Serial.begin(115200);
+
+  // Inicializar DHT11
+  dht.begin();
+
+  // Inicializar BME280
+  if (!bme.begin(0x76)) {
+    Serial.println("Error inicializando el BME280!");
+    while (1);
+  }
+
+  // Configurar pines analógicos
+  //pinMode(LDR_PIN, INPUT);
+  //pinMode(WATER_SENSOR_PIN, INPUT);
+}
+
+void loop() {
+  // Lecturas de DHT11
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  // Lecturas de BME280
+  float pressure = bme.readPressure() / 100.0F;
+  
+  // Lectura de Fotoresistor
+  //int lightLevel = analogRead(LDR_PIN);
+
+  // Lectura de sensor de agua
+  //int waterLevel = analogRead(WATER_SENSOR_PIN);
+
+  // Imprimir valores
+  Serial.print("Temp DHT11: "); Serial.print(temperature); Serial.println(" C");
+  Serial.print("Hum DHT11: "); Serial.print(humidity); Serial.println(" %");
+  Serial.print("Presión BME280: "); Serial.print(pressure); Serial.println(" hPa");
+  //Serial.print("Luz LDR: "); Serial.println(lightLevel);
+  //Serial.print("Nivel de Agua: "); Serial.println(waterLevel);
+
+  delay(2000); // Esperar 2 segundos entre lecturas
+}
