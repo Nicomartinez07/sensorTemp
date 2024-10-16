@@ -1,55 +1,132 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
+#include <Adafruit_BMP280.h>  // Cambia BME280 por BMP280
 #include <DHT.h>
+#include <WiFi.h>
+#include <WiFiMulti.h>
+#include <HTTPClient.h>
 
 // Definiciones
 #define DHTPIN 5 // Pin donde conectas el DHT11
 #define DHTTYPE DHT11
-//#define WATER_SENSOR_PIN GPIO33
-//#define LDR_PIN GPIO32
+#define WATER_SENSOR_PIN 33
+#define LDR_PIN 32
 
 // Inicialización de sensores
 DHT dht(DHTPIN, DHTTYPE);
-Adafruit_BME280 bme;
+Adafruit_BMP280 bmp;  // Crear objeto BMP280
+//Adafruit_BME280 bme;
+
+// Variables para WiFi
+#define USE_SERIAL Serial
+const char* ssid = "ETEC-UBA";  // Reemplaza con tu SSID
+const char* password = "ETEC-alumnos@UBA";  // Reemplaza con tu contraseña
 
 void setup() {
-  Serial.begin(115200);
+  USE_SERIAL.begin(115200);
+  delay(1000);
 
   // Inicializar DHT11
   dht.begin();
 
-  // Inicializar BME280
-  if (!bme.begin(0x76)) {
-    Serial.println("Error inicializando el BME280!");
-    while (1);
+  // Inicializar BMP280
+  if (!bmp.begin(0x76)) {  // Cambia a 0x77 si es necesario
+    Serial.println("Error inicializando el BMP280!");
+    while (1);  // Detener el programa si no se inicializa
   }
+  /*if (!bme.begin(0x76)) {  // Cambia a 0x77 si es necesario
+    Serial.println("Error inicializando el BME280!");
+    while (1);  // Detener el programa si no se inicializa
+  }*/
+
 
   // Configurar pines analógicos
-  //pinMode(LDR_PIN, INPUT);
-  //pinMode(WATER_SENSOR_PIN, INPUT);
+  pinMode(LDR_PIN, INPUT);
+  pinMode(WATER_SENSOR_PIN, INPUT);
+
+  // Conectar a WiFi
+  WiFi.begin(ssid, password);
+  int numberOfTries = 20;
+
+  // Esperar a que se conecte al WiFi
+  while (WiFi.status() != WL_CONNECTED && numberOfTries > 0) {
+    delay(500);
+    USE_SERIAL.print(".");
+    numberOfTries--;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    USE_SERIAL.println("\nConectado a WiFi");
+    USE_SERIAL.print("IP address: ");
+    USE_SERIAL.println(WiFi.localIP());
+  } else {
+    USE_SERIAL.println("\nError de conexión a WiFi");
+    while (1);  // Detener el programa si no se conecta
+  }
 }
 
 void loop() {
   // Lecturas de DHT11
   float temperature = dht.readTemperature();
   float humidity = dht.readHumidity();
+  delay(1000);
 
-  // Lecturas de BME280
-  float pressure = bme.readPressure() / 100.0F;
-  
+  // Lecturas de BMP280
+  float pressure = bmp.readPressure() / 100.0F;
+  //float pressure = bme.readPressure() / 100.0F;
+
+  // Verificar si las lecturas son válidas
+  if (isnan(temperature) || isnan(humidity)) {
+      USE_SERIAL.println("Error al leer DHT11");
+  }
+  if (isnan(pressure)) {
+      USE_SERIAL.println("Error al leer presión del BMP280"); 
+  }
+
   // Lectura de Fotoresistor
-  //int lightLevel = analogRead(LDR_PIN);
+  int lightLevel = analogRead(LDR_PIN);
 
   // Lectura de sensor de agua
-  //int waterLevel = analogRead(WATER_SENSOR_PIN);
+  int waterLevel = analogRead(WATER_SENSOR_PIN);
 
-  // Imprimir valores
-  Serial.print("Temp DHT11: "); Serial.print(temperature); Serial.println(" C");
-  Serial.print("Hum DHT11: "); Serial.print(humidity); Serial.println(" %");
-  Serial.print("Presión BME280: "); Serial.print(pressure); Serial.println(" hPa");
-  //Serial.print("Luz LDR: "); Serial.println(lightLevel);
-  //Serial.print("Nivel de Agua: "); Serial.println(waterLevel);
+  // Crear request string con todos los datos de los sensores
+  String request = "tempDHT=" + String(temperature) + 
+                   "&humDHT=" + String(humidity) + 
+                   "&presionBMP=" + String(pressure) + 
+                   "&luzLDR=" + String(lightLevel) + 
+                   "&nivelAgua=" + String(waterLevel);
 
-  delay(2000); // Esperar 2 segundos entre lecturas
+  // Enviar datos por HTTP
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    USE_SERIAL.print("[HTTP] POST...\n");
+    http.begin("http://10.9.121.7:5000/sensores"); // Cambia a la URL de tu servidor
+
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    int httpCode = http.POST(request); // Enviar el request
+
+    // Comprobar la respuesta del servidor
+    if (httpCode > 0) {
+      USE_SERIAL.printf("[HTTP] POST... code: %d\n", httpCode);
+      if (httpCode == HTTP_CODE_OK) {
+        String payload = http.getString();
+        USE_SERIAL.println(payload);
+      }
+    } else {
+      USE_SERIAL.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+    http.end();
+  } else {
+    USE_SERIAL.println("Desconectado");
+  }
 }
+
+/*
+* Consideraciones para el BME280:
+* Si decides utilizar el BME280 en lugar del BMP280, simplemente reemplaza:
+* - Adafruit_BMP280 bmp; con Adafruit_BME280 bme;
+* - bmp.begin(0x76) con bme.begin(0x76);
+* - La lectura de presión sería: float pressure = bme.readPressure() / 100.0F; 
+* - Asegúrate de que el sensor BME280 esté correctamente conectado y que 
+* la dirección I2C sea la correcta (0x76 o 0x77).
+*/
