@@ -1,21 +1,20 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BMP280.h>  // Cambia BME280 por BMP280
+#include <Adafruit_BMP280.h>
 #include <DHT.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 
 // Definiciones
-#define DHTPIN 5 // Pin donde conectas el DHT11
-#define DHTTYPE DHT11
+#define DHTPIN 5      // Pin donde conectas el DHT22
+#define DHTTYPE DHT22 // Cambiar a DHT22
 #define WATER_SENSOR_PIN 33
 #define LDR_PIN 32
 
 // Inicialización de sensores
 DHT dht(DHTPIN, DHTTYPE);
 Adafruit_BMP280 bmp;  // Crear objeto BMP280
-//Adafruit_BME280 bme;
 
 // Variables para WiFi
 #define USE_SERIAL Serial
@@ -26,19 +25,14 @@ void setup() {
   USE_SERIAL.begin(115200);
   delay(1000);
 
-  // Inicializar DHT11
+  // Inicializar DHT22
   dht.begin();
 
   // Inicializar BMP280
   if (!bmp.begin(0x76)) {  // Cambia a 0x77 si es necesario
-    Serial.println("Error inicializando el BMP280!");
+    USE_SERIAL.println("Error inicializando el BMP280!");
     while (1);  // Detener el programa si no se inicializa
   }
-  /*if (!bme.begin(0x76)) {  // Cambia a 0x77 si es necesario
-    Serial.println("Error inicializando el BME280!");
-    while (1);  // Detener el programa si no se inicializa
-  }*/
-
 
   // Configurar pines analógicos
   pinMode(LDR_PIN, INPUT);
@@ -66,21 +60,21 @@ void setup() {
 }
 
 void loop() {
-  // Lecturas de DHT11
-  float temperature = dht.readTemperature();
+  delay(60000);
+  // Lecturas de DHT22
   float humidity = dht.readHumidity();
-  delay(1000);
+  float temperature = dht.readTemperature();
+
+  // Verificar si las lecturas son válidas
+  if (isnan(humidity) || isnan(temperature)) {
+    USE_SERIAL.println("Error al leer DHT22");
+    return; // Salir si hay error
+  }
 
   // Lecturas de BMP280
   float pressure = bmp.readPressure() / 100.0F;
-  //float pressure = bme.readPressure() / 100.0F;
-
-  // Verificar si las lecturas son válidas
-  if (isnan(temperature) || isnan(humidity)) {
-      USE_SERIAL.println("Error al leer DHT11");
-  }
   if (isnan(pressure)) {
-      USE_SERIAL.println("Error al leer presión del BMP280"); 
+    USE_SERIAL.println("Error al leer presión del BMP280"); 
   }
 
   // Lectura de Fotoresistor
@@ -100,7 +94,7 @@ void loop() {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     USE_SERIAL.print("[HTTP] POST...\n");
-    http.begin("http://10.9.121.7:5000/sensores"); // Cambia a la URL de tu servidor
+    http.begin("http://10.9.121.112:5000/sensores"); // Cambia a la URL de tu servidor
 
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
     int httpCode = http.POST(request); // Enviar el request
@@ -120,13 +114,3 @@ void loop() {
     USE_SERIAL.println("Desconectado");
   }
 }
-
-/*
-* Consideraciones para el BME280:
-* Si decides utilizar el BME280 en lugar del BMP280, simplemente reemplaza:
-* - Adafruit_BMP280 bmp; con Adafruit_BME280 bme;
-* - bmp.begin(0x76) con bme.begin(0x76);
-* - La lectura de presión sería: float pressure = bme.readPressure() / 100.0F; 
-* - Asegúrate de que el sensor BME280 esté correctamente conectado y que 
-* la dirección I2C sea la correcta (0x76 o 0x77).
-*/

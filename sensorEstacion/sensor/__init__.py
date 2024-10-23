@@ -1,18 +1,40 @@
 from datetime import datetime
 import sqlite3
 from flask import Flask, request
+from flask_cors import CORS
+def dict_factory(cursor, row):
+   """Arma un diccionario con los valores de la fila."""
+   fields = [column[0] for column in cursor.description]
+   return {key: value for key, value in zip(fields, row)}
 
 db_path = 'sensores.sqlite'
 conn = sqlite3.connect(db_path)
+conn.row_factory = dict_factory
 # Ensure the table exists
 
-with open("sensor.sql") as f:
+with open("sensor/sensor.sql") as f:
     conn.executescript(f.read())
 
 app = Flask(__name__)
+CORS(app)  # Esto habilita CORS para todas las rutas
 
-@app.route('/sensores', methods=('POST',))
-def hello():
+
+@app.route('/sensores', methods=('GET',))
+def mostrarValores():
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = dict_factory
+    res = conn.execute('''
+                        SELECT * FROM Sensores 
+                        LIMIT 1
+                    ''') 
+    valores = res.fetchone()
+    conn.close()
+
+    return valores
+
+
+@app.route('/sensores', methods=('POST', ))
+def cargarValor():
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     temp = float(request.form['tempDHT'])
     print(f'Sensor Temperatura: {temp}')

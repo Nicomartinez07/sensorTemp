@@ -1,0 +1,38 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh; /* Ocupa todo el alto de la pantalla */
+    width: 100%;   /* Ocupa todo el ancho */
+    background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); /* Similar al fondo del ejemplo */
+    padding: 20px;
+    box-sizing: border-box; /* Para que el padding no exceda el tamaño del viewport */
+  }
+  
+  .header {
+    text-align: center;
+  }
+  
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+    flex-grow: 1; /* Hace que el grid crezca para ocupar espacio */
+  }
+  
+  .info-card {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .footer {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
