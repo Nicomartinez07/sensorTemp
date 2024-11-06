@@ -1,38 +1,82 @@
+/* Estilos generales */
+body.dark-mode {
+  background: linear-gradient(to top, #141e30, #243b55); /* Gradiente de noche */
+  color: #f0f0f0; /* Texto claro */
+}
+
+body.light-mode {
+  background: linear-gradient(to top, #00c6ff, #0072ff); /* Gradiente de día */
+  color: #000000; /* Texto oscuro */
+}
+
+/* Estilos de la estructura principal */
 .dashboard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    height: 100vh; /* Ocupa todo el alto de la pantalla */
-    width: 100%;   /* Ocupa todo el ancho */
-    background: linear-gradient(to bottom, #a1c4fd, #c2e9fb); /* Similar al fondo del ejemplo */
-    padding: 20px;
-    box-sizing: border-box; /* Para que el padding no exceda el tamaño del viewport */
-  }
-  
-  .header {
-    text-align: center;
-  }
-  
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    width: 100%;
-    max-width: 600px;
-    flex-grow: 1; /* Hace que el grid crezca para ocupar espacio */
-  }
-  
-  .info-card {
-    background-color: rgba(255, 255, 255, 0.2);
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .footer {
-    margin-top: 20px;
-    text-align: center;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100vh; /* Ocupa toda la altura de la pantalla */
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  transition: background 1s ease; /* Transición suave */
+}
+
+/* Otros estilos de la estructura */
+.header {
+  text-align: center;
+}
+
+.temperature-display {
+  display: flex;
+  align-items: center;
+  font-size: 48px;
+  color: #ffffff;
+}
+
+.weather-icon {
+  font-size: 48px;
+  color: #b0b0b5;
+  margin-right: 10px;
+}
+
+.temperature {
+  font-weight: bold;
+}
+
+/* Grid de información */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+  flex-grow: 1;
+}
+
+/* Tarjetas de información */
+.info-card {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer */
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  color: inherit; /* Usa el color actual del modo oscuro/claro */
+}
+
+
+.sun-icon {
+  color: yellow; /* Color amarillo para el sol */
+}
+
+.humidity-icon {
+  font-size: 30px; /* Aumentamos el tamaño del ícono */
+  color: white; /* Cambiamos el color del ícono a blanco */
+  margin-right: 8px; /* Añadimos espacio entre el ícono y el texto */
+}
