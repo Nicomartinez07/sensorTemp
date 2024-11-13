@@ -13,11 +13,13 @@ const WeatherDashboard = () => {
     lightLevel: null,
     timestamp: null,
     waterLevel: null,
+    sunrise: null,
+    sunset: null,
   });
 
   // Función para obtener los datos desde la API
   const fetchData = () => {
-    axios.get('http://10.9.120.54:5000/sensores')
+    axios.get('http://10.9.121.202:5000/sensores')
       .then(response => {
         console.log("Datos recibidos:", response.data); // Mostrar los datos recibidos
         setData(response.data); // Actualiza el estado con los datos recibidos
@@ -96,11 +98,12 @@ const WeatherDashboard = () => {
         <div className="info-card"><WiHumidity className="humidity-icon" />Humedad: {data.humidity ? `${data.humidity}%` : 'Cargando...'}</div>
         <div className="info-card">Presión: {data.pressure ? `${data.pressure} hPa` : 'Cargando...'}</div>
         
+        {/* Mostrar la hora de salida y puesta del sol */}
         <div className="info-card">
-          <FiSunrise style={{ color: 'yellow', marginRight: '8px' }} /> Salida del sol: 06:01
+          <FiSunrise style={{ color: 'yellow', marginRight: '8px' }} /> Salida del sol: {data.sunrise ? new Date(data.sunrise).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'Cargando...'}
         </div>
         <div className="info-card">
-          <FiSunset style={{ color: 'orange', marginRight: '8px' }} /> Atardecer: 19:15
+          <FiSunset style={{ color: 'orange', marginRight: '8px' }} /> Atardecer: {data.sunset ? new Date(data.sunset).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'Cargando...'}
         </div>
       </div>
 

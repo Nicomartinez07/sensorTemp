@@ -5,5 +5,7 @@ CREATE TABLE IF NOT EXISTS Sensores (
         humidity REAL, 
         pressure REAL, 
         lightLevel REAL,
-        waterLevel REAL
+        waterLevel REAL,
+        sunrise TEXT,
+        sunset TEXT
     )
